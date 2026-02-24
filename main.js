@@ -43,28 +43,29 @@ let prevGX = 0.5, prevGY = 0.5;
 let resetUntil = 0;
 
 // --- MediaPipe FaceMesh via CDN (ESM) ---
-import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
 
 let faceLandmarker = null;
 let lastLandmarks = null;
 
 async function initFaceMesh() {
   statusEl.textContent = "status: loading face model…";
-  const filesetResolver = await vision.FilesetResolver.forVisionTasks(
+
+  const filesetResolver = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
   );
-  faceLandmarker = await vision.FaceLandmarker.createFromOptions(filesetResolver, {
+
+  faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
     baseOptions: {
       modelAssetPath:
         "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
     },
-    outputFaceBlendshapes: false,
     runningMode: "VIDEO",
     numFaces: 1,
   });
+
   statusEl.textContent = "status: model loaded";
 }
-
 async function initCamera() {
   statusEl.textContent = "status: requesting camera…";
   const stream = await navigator.mediaDevices.getUserMedia({
