@@ -1,3 +1,5 @@
+console.log("BORING MVP: main.js loaded");
+document.getElementById("status").textContent = "status: script loaded";
 import { RollingStats, computeArousal, clamp01 } from "./arousal.js";
 import { Neutralizer } from "./neutralization.js";
 
