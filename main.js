@@ -225,7 +225,7 @@ async function tick() {
 // --- UI wiring ---
 startBtn.onclick = async () => {
   if (running) return;
-  setStartUi(false);
+  setStartUi(true);
   try {
     await initFaceMesh();
     await initCamera();
