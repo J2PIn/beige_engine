@@ -1,6 +1,5 @@
 import { RollingStats, computeArousal, clamp01 } from "./arousal.js";
 import { Neutralizer } from "./neutralization.js";
-import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
 
 console.log("BORING MVP: main.js loaded");
 document.getElementById("status").textContent = "status: script loaded";
@@ -167,8 +166,18 @@ import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@m
 let faceLandmarker = null;
 let lastLandmarks = null;
 
+let FilesetResolver = null;
+let FaceLandmarker = null;
+
 async function initFaceMesh() {
   statusEl.textContent = "status: loading face model…";
+
+  // Dynamic import so the page doesn't die if CDN import fails
+  if (!FilesetResolver || !FaceLandmarker) {
+    const mp = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14");
+    FilesetResolver = mp.FilesetResolver;
+    FaceLandmarker = mp.FaceLandmarker;
+  }
 
   const filesetResolver = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
