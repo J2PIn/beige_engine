@@ -71,6 +71,7 @@ const startBtn = document.getElementById("startBtn");
 const modeBtn = document.getElementById("modeBtn");
 const calBtn = document.getElementById("calBtn");
 const reset10Btn = document.getElementById("reset10Btn");
+const copyBtn = document.getElementById("copyBtn");
 
 const video = document.getElementById("video");
 
@@ -97,6 +98,7 @@ let maxLevel = 0;
 let lastCardBlob = null;
 let cameraStream = null;
 let rafId = null;
+let spikeState = false;
 
 // --- Neutralizer ---
 const spikeEl = document.getElementById("spike");
@@ -211,6 +213,22 @@ function formatMs(ms) {
   return `${mm}:${ss}`;
 }
 
+function sessionToQuery(s) {
+  const p = new URLSearchParams();
+  p.set("d", String(Math.floor(s.durationMs / 1000)));
+  p.set("fs", s.tFirstSpikeMs == null ? "none" : String(Math.floor(s.tFirstSpikeMs / 1000)));
+  p.set("sp", String(s.spikes));
+  p.set("al", s.avgArousal.toFixed(3));
+  p.set("ml", s.maxLevel.toFixed(2));
+  p.set("m", s.mode);
+  return p.toString();
+}
+
+function getShareUrl() {
+  const base = location.origin + location.pathname;
+  return `${base}?${sessionToQuery(session)}`;
+}
+
 async function tick() {
   if (!running) return;
 
@@ -275,6 +293,17 @@ async function tick() {
       else spikeCount = Math.max(0, spikeCount - 1);
       
       const spike = spikeCount >= 8; // ~8 frames ≈ 130–160ms depending on fps
+      const prevSpikeState = spikeState;
+      spikeState = spike;
+      
+      if (spike && !prevSpikeState) {
+        spikeTotal += 1;
+        if (firstSpikeAt === null) firstSpikeAt = now;
+        neutralizer.spike(now);
+        spikeUntil = now + 350;
+      } else if (!spike) {
+        neutralizer.calm(now);
+      }
       
       if (spike) {
         spikeTotal += 1;
