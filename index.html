@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BORING MVP</title>
+    <style>
+      html, body { margin:0; height:100%; background:#f5f5f0; font-family: ui-sans-serif, system-ui; }
+      #hud {
+        position: fixed; top: 10px; left: 10px; padding: 10px 12px;
+        background: rgba(255,255,255,0.75); border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 10px; font-size: 12px; line-height: 1.4;
+        backdrop-filter: blur(6px);
+      }
+      #canvas { display:block; width:100vw; height:100vh; }
+      #video { position: fixed; right: 10px; bottom: 10px; width: 180px; opacity: 0.08; border-radius: 10px; }
+      button { font-size: 12px; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); background: white; }
+      .row { display:flex; gap:8px; align-items:center; margin-top:8px; flex-wrap:wrap; }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div id="hud">
+      <div><b>BORING MVP</b></div>
+      <div id="status">status: idle</div>
+      <div id="metrics">arousal: - | baseline: - | level: -</div>
+      <div class="row">
+        <button id="startBtn">Start</button>
+        <button id="modeBtn">Mode: GAME</button>
+        <button id="calBtn">Recalibrate</button>
+      </div>
+      <div class="row">
+        <button id="reset10Btn">Reset: 10:00</button>
+        <span id="timer"></span>
+      </div>
+    </div>
+
+    <video id="video" autoplay playsinline muted></video>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
