@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BORING MVP</title>
     <style>
+      button { cursor: pointer; transition: transform .06s ease, background .12s ease; }
+      button:hover { transform: translateY(-1px); background: #fafaf7; }
+      button:active { transform: translateY(0px); }
+      button[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
       html, body { margin:0; height:100%; background:#f5f5f0; font-family: ui-sans-serif, system-ui; }
       #hud {
         position: fixed; top: 10px; left: 10px; padding: 10px 12px;
