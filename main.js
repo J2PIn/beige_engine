@@ -1,7 +1,7 @@
-
 import { RollingStats, computeArousal, clamp01 } from "./arousal.js";
 import { Neutralizer } from "./neutralization.js";
 import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
 console.log("BORING MVP: main.js loaded");
 document.getElementById("status").textContent = "status: script loaded";
 
@@ -119,6 +119,9 @@ const stopBtn = document.getElementById("stopBtn");
 const shareBtn = document.getElementById("shareBtn");
 const dlBtn = document.getElementById("dlBtn");
 const resultEl = document.getElementById("result");
+if (!stopBtn || !shareBtn || !dlBtn || !resultEl) {
+  console.warn("Missing session UI elements", { stopBtn, shareBtn, dlBtn, resultEl });
+}
 
 // --- NEW: session state ---
 let session = null;
@@ -307,8 +310,6 @@ async function tick() {
       const spike = spikeCount >= 8; // ~8 frames ≈ 130–160ms depending on fps
       
       if (spike) {
-        spikeTotal += 1;
-        if (firstSpikeAt === null) firstSpikeAt = now;
         neutralizer.spike(now);
         spikeUntil = now + 350;
       } else {
