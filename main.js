@@ -161,7 +161,6 @@ let prevGX = 0.5, prevGY = 0.5;
 let resetUntil = 0;
 
 // --- MediaPipe FaceMesh via CDN (ESM) ---
-import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
 
 let faceLandmarker = null;
 let lastLandmarks = null;
