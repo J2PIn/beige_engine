@@ -95,6 +95,8 @@ let firstSpikeAt = null;
 let maxLevel = 0;
 
 let lastCardBlob = null;
+let cameraStream = null;
+let rafId = null;
 
 // --- Neutralizer ---
 const spikeEl = document.getElementById("spike");
@@ -149,14 +151,14 @@ async function initFaceMesh() {
   });
 
   statusEl.textContent = "status: model loaded";
-}
-async function initCamera() {
-  statusEl.textContent = "status: requesting camera…";
-  const stream = await navigator.mediaDevices.getUserMedia({
+  }
+  async function initCamera() {
+    statusEl.textContent = "status: requesting camera…";
+    cameraStream = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
     audio: false,
   });
-  video.srcObject = stream;
+  video.srcObject = cameraStream;
   await video.play();
   statusEl.textContent = "status: camera active";
 }
@@ -306,7 +308,27 @@ async function tick() {
     timerEl.textContent = "";
   }
   spikeEl.style.opacity = now < spikeUntil ? "1" : "0";
-  requestAnimationFrame(tick);
+  rafId = requestAnimationFrame(tick);
+}
+function stopRun() {
+  running = false;
+  calibrated = false;
+  lastLandmarks = null;
+
+  if (rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((t) => t.stop());
+    cameraStream = null;
+  }
+
+  if (video) video.srcObject = null;
+
+  setStartUi(false);
+  statusEl.textContent = "status: idle";
 }
 
 // --- UI wiring ---
@@ -332,7 +354,7 @@ startBtn.onclick = async () => {
     dlBtn.disabled = true;
     setStartUi(true);
     beginCalibration(10);
-    requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(tick);
   } catch (e) {
     console.error(e);
     statusEl.textContent = `status: error (${e?.message || e})`;
@@ -396,6 +418,7 @@ function endSession() {
 stopBtn.onclick = () => {
   if (!running) return;
   endSession();
+  stopRun();
 };
 if (dlBtn) dlBtn.onclick = async () => {
   if (!session) endSession();
