@@ -166,24 +166,20 @@ import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@m
 let faceLandmarker = null;
 let lastLandmarks = null;
 
-let FilesetResolver = null;
-let FaceLandmarker = null;
-
 async function initFaceMesh() {
   statusEl.textContent = "status: loading face model…";
 
-  // Dynamic import so the page doesn't die if CDN import fails
-  if (!FilesetResolver || !FaceLandmarker) {
+  if (!FilesetResolverRef || !FaceLandmarkerRef) {
     const mp = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14");
-    FilesetResolver = mp.FilesetResolver;
-    FaceLandmarker = mp.FaceLandmarker;
+    FilesetResolverRef = mp.FilesetResolver;
+    FaceLandmarkerRef = mp.FaceLandmarker;
   }
 
-  const filesetResolver = await FilesetResolver.forVisionTasks(
+  const filesetResolver = await FilesetResolverRef.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
   );
 
-  faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+  faceLandmarker = await FaceLandmarkerRef.createFromOptions(filesetResolver, {
     baseOptions: {
       modelAssetPath:
         "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
