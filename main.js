@@ -1,7 +1,9 @@
-console.log("BORING MVP: main.js loaded");
-document.getElementById("status").textContent = "status: script loaded";
+
 import { RollingStats, computeArousal, clamp01 } from "./arousal.js";
 import { Neutralizer } from "./neutralization.js";
+import { FilesetResolver, FaceLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+console.log("BORING MVP: main.js loaded");
+document.getElementById("status").textContent = "status: script loaded";
 
 // --- Canvas sizing ---
 const canvas = document.getElementById("canvas");
@@ -13,6 +15,94 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
+async function makeShareCardBlob() {
+  // Create offscreen card
+  const w = 1080, h = 1920;
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const g = c.getContext("2d");
+
+  // Background: current boring frame
+  // Draw the live canvas scaled to fill
+  const src = canvas;
+  g.drawImage(src, 0, 0, w, h);
+
+  // Soft overlay for readability
+  g.fillStyle = "rgba(255,255,255,0.75)";
+  g.fillRect(60, 120, w - 120, 520);
+
+  g.fillStyle = "rgba(0,0,0,0.85)";
+  g.font = "bold 56px ui-sans-serif, system-ui";
+  g.fillText("BORING.AI (MVP)", 90, 200);
+
+  g.font = "28px ui-sans-serif, system-ui";
+  const lines = [
+    `Mode: ${session?.mode ?? mode}`,
+    `Duration: ${Math.floor((session?.durationMs ?? 0)/1000)}s`,
+    `First spike: ${session?.tFirstSpikeMs == null ? "none" : Math.floor(session.tFirstSpikeMs/1000) + "s"}`,
+    `Spikes: ${session?.spikes ?? 0}`,
+    `Avg arousal: ${(session?.avgArousal ?? 0).toFixed(3)}`,
+    `Max level: ${(session?.maxLevel ?? 0).toFixed(2)}`,
+    "",
+    "If you get excited, you lose.",
+    "beige-engine.pages.dev",
+  ];
+  let y = 260;
+  for (const line of lines) {
+    g.fillText(line, 90, y);
+    y += 46;
+  }
+
+  return await new Promise((resolve) => {
+    c.toBlob((b) => resolve(b), "image/png", 0.92);
+  });
+}
+
+dlBtn.onclick = async () => {
+  if (!session) endSession();
+  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
+  const url = URL.createObjectURL(lastCardBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "boring-ai-session.png";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+shareBtn.onclick = async () => {
+  if (!session) endSession();
+  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
+
+  const file = new File([lastCardBlob], "boring-ai-session.png", { type: "image/png" });
+  const text = `I tried to reach maximum boredom. Time to first spike: ${
+    session.tFirstSpikeMs == null ? "none" : Math.floor(session.tFirstSpikeMs/1000) + "s"
+  }.`;
+
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ title: "BORING.AI", text, files: [file] });
+  } else {
+    // fallback: download
+    dlBtn.click();
+  }
+};
+
+shareBtn.onclick = async () => {
+  if (!session) endSession();
+  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
+
+  const file = new File([lastCardBlob], "boring-ai-session.png", { type: "image/png" });
+  const text = `I tried to reach maximum boredom. Time to first spike: ${
+    session.tFirstSpikeMs == null ? "none" : Math.floor(session.tFirstSpikeMs/1000) + "s"
+  }.`;
+
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ title: "BORING.AI", text, files: [file] });
+  } else {
+    // fallback: download
+    dlBtn.click();
+  }
+};
+
 // --- HUD elements ---
 const statusEl = document.getElementById("status");
 const metricsEl = document.getElementById("metrics");
@@ -23,6 +113,25 @@ const calBtn = document.getElementById("calBtn");
 const reset10Btn = document.getElementById("reset10Btn");
 
 const video = document.getElementById("video");
+
+// --- NEW: session buttons ---
+const stopBtn = document.getElementById("stopBtn");
+const shareBtn = document.getElementById("shareBtn");
+const dlBtn = document.getElementById("dlBtn");
+const resultEl = document.getElementById("result");
+
+// --- NEW: session state ---
+let session = null;
+let sessionStart = 0;
+let lastArousal = 0;
+let maxArousal = 0;
+let arousalSum = 0;
+let arousalN = 0;
+let spikeTotal = 0;
+let firstSpikeAt = null;
+let maxLevel = 0;
+
+let lastCardBlob = null;
 
 // --- Neutralizer ---
 const spikeEl = document.getElementById("spike");
@@ -180,6 +289,13 @@ async function tick() {
       arousalBaseline.push(arousal);
       const base = Math.max(0.0001, arousalBaseline.mean());
 
+      // --- session stats ---
+      lastArousal = arousal;
+      maxArousal = Math.max(maxArousal, arousal);
+      arousalSum += arousal;
+      arousalN += 1;
+      maxLevel = Math.max(maxLevel, neutralizer.level);
+
       // Spike logic (different sensitivity per mode)
       const mult = mode === "GAME" ? 1.15 : 1.10;
       const spikeRaw = arousal > base * mult;
@@ -191,6 +307,8 @@ async function tick() {
       const spike = spikeCount >= 8; // ~8 frames ≈ 130–160ms depending on fps
       
       if (spike) {
+        spikeTotal += 1;
+        if (firstSpikeAt === null) firstSpikeAt = now;
         neutralizer.spike(now);
         spikeUntil = now + 350;
       } else {
@@ -230,6 +348,19 @@ startBtn.onclick = async () => {
     await initFaceMesh();
     await initCamera();
     running = true;
+    sessionStart = performance.now();
+    lastArousal = 0;
+    maxArousal = 0;
+    arousalSum = 0;
+    arousalN = 0;
+    spikeTotal = 0;
+    firstSpikeAt = null;
+    maxLevel = 0;
+    lastCardBlob = null;
+    
+    resultEl.textContent = "";
+    shareBtn.disabled = true;
+    dlBtn.disabled = true;
     setStartUi(true);
     beginCalibration(10);
     requestAnimationFrame(tick);
@@ -248,3 +379,52 @@ modeBtn.onclick = () => {
 calBtn.onclick = () => beginCalibration(mode === "RESET" ? 8 : 10);
 
 reset10Btn.onclick = () => startReset10();
+
+function endSession() {
+  const now = performance.now();
+  const durationMs = now - sessionStart;
+  const avgArousal = arousalN ? (arousalSum / arousalN) : 0;
+  const tFirstSpike = firstSpikeAt ? (firstSpikeAt - sessionStart) : null;
+
+  session = {
+    endedAt: Date.now(),
+    mode,
+    durationMs,
+    spikes: spikeTotal,
+    avgArousal,
+    maxArousal,
+    maxLevel,
+    tFirstSpikeMs: tFirstSpike,
+  };
+
+  // best run (by duration without spike, fallback duration)
+  const score = tFirstSpike ?? durationMs;
+  const prev = JSON.parse(localStorage.getItem("beige_best") || "null");
+  if (!prev || score > (prev.tFirstSpikeMs ?? prev.durationMs)) {
+    localStorage.setItem("beige_best", JSON.stringify(session));
+  }
+
+  const fmt = (ms) => {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const mm = String(Math.floor(s / 60)).padStart(2,"0");
+    const ss = String(s % 60).padStart(2,"0");
+    return `${mm}:${ss}`;
+  };
+
+  resultEl.innerHTML =
+    `<b>Session complete</b><br>` +
+    `Mode: ${session.mode}<br>` +
+    `Duration: ${fmt(session.durationMs)}<br>` +
+    `Time to first spike: ${session.tFirstSpikeMs == null ? "none" : fmt(session.tFirstSpikeMs)}<br>` +
+    `Spikes: ${session.spikes}<br>` +
+    `Avg arousal: ${session.avgArousal.toFixed(3)}<br>` +
+    `Max level: ${session.maxLevel.toFixed(2)}<br>`;
+
+  shareBtn.disabled = false;
+  dlBtn.disabled = false;
+}
+
+stopBtn.onclick = () => {
+  if (!running) return;
+  endSession();
+};
