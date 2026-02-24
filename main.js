@@ -14,6 +14,9 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
+let FilesetResolverRef = null;
+let FaceLandmarkerRef = null;
+
 async function makeShareCardBlob() {
   // Create offscreen card
   const w = 1080, h = 1920;
@@ -57,50 +60,8 @@ async function makeShareCardBlob() {
   });
 }
 
-dlBtn.onclick = async () => {
-  if (!session) endSession();
-  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
-  const url = URL.createObjectURL(lastCardBlob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "boring-ai-session.png";
-  a.click();
-  URL.revokeObjectURL(url);
-};
 
-shareBtn.onclick = async () => {
-  if (!session) endSession();
-  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
 
-  const file = new File([lastCardBlob], "boring-ai-session.png", { type: "image/png" });
-  const text = `I tried to reach maximum boredom. Time to first spike: ${
-    session.tFirstSpikeMs == null ? "none" : Math.floor(session.tFirstSpikeMs/1000) + "s"
-  }.`;
-
-  if (navigator.share && navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ title: "BORING.AI", text, files: [file] });
-  } else {
-    // fallback: download
-    dlBtn.click();
-  }
-};
-
-shareBtn.onclick = async () => {
-  if (!session) endSession();
-  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
-
-  const file = new File([lastCardBlob], "boring-ai-session.png", { type: "image/png" });
-  const text = `I tried to reach maximum boredom. Time to first spike: ${
-    session.tFirstSpikeMs == null ? "none" : Math.floor(session.tFirstSpikeMs/1000) + "s"
-  }.`;
-
-  if (navigator.share && navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ title: "BORING.AI", text, files: [file] });
-  } else {
-    // fallback: download
-    dlBtn.click();
-  }
-};
 
 // --- HUD elements ---
 const statusEl = document.getElementById("status");
@@ -314,6 +275,9 @@ async function tick() {
       const spike = spikeCount >= 8; // ~8 frames ≈ 130–160ms depending on fps
       
       if (spike) {
+        spikeTotal += 1;
+        if (firstSpikeAt === null) firstSpikeAt = now;
+      
         neutralizer.spike(now);
         spikeUntil = now + 350;
       } else {
@@ -432,4 +396,31 @@ function endSession() {
 stopBtn.onclick = () => {
   if (!running) return;
   endSession();
+};
+if (dlBtn) dlBtn.onclick = async () => {
+  if (!session) endSession();
+  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
+  const url = URL.createObjectURL(lastCardBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "boring-ai-session.png";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+if (shareBtn) shareBtn.onclick = async () => {
+  if (!session) endSession();
+  if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
+
+  const file = new File([lastCardBlob], "boring-ai-session.png", { type: "image/png" });
+  const text = `I tried to reach maximum boredom. Time to first spike: ${
+    session.tFirstSpikeMs == null ? "none" : Math.floor(session.tFirstSpikeMs/1000) + "s"
+  }.`;
+
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ title: "BORING.AI", text, files: [file] });
+  } else {
+    // fallback: download
+    dlBtn?.click();
+  }
 };
