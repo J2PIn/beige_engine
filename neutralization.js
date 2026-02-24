@@ -13,14 +13,17 @@ export class Neutralizer {
   }
 
   spike(nowMs) {
-    this.lastSpikeAt = nowMs;
-    if (this.mode === "GAME") {
-      this.levelTarget = Math.min(4, this.levelTarget + 1);
-    } else {
-      // RESET: damp more gently
-      this.levelTarget = Math.min(4, this.levelTarget + 0.5);
-    }
+  // Cooldown so we don't escalate multiple times per second
+  if (nowMs - this.lastSpikeAt < 600) return; // 0.6s
+  this.lastSpikeAt = nowMs;
+
+  if (this.mode === "GAME") {
+    this.levelTarget = Math.min(4, this.levelTarget + 1);
+  } else {
+    // RESET: damp more gently
+    this.levelTarget = Math.min(4, this.levelTarget + 0.5);
   }
+}
 
   calm(nowMs) {
     // slowly decay level target if stable
