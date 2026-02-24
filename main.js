@@ -25,6 +25,9 @@ const reset10Btn = document.getElementById("reset10Btn");
 const video = document.getElementById("video");
 
 // --- Neutralizer ---
+const spikeEl = document.getElementById("spike");
+let spikeUntil = 0;
+let spikeCount = 0;
 const neutralizer = new Neutralizer(canvas);
 
 // --- Rolling stats ---
@@ -179,10 +182,20 @@ async function tick() {
 
       // Spike logic (different sensitivity per mode)
       const mult = mode === "GAME" ? 1.15 : 1.10;
-      const spike = arousal > base * mult;
-
-      if (spike) neutralizer.spike(now);
-      else neutralizer.calm(now);
+      const spikeRaw = arousal > base * mult;
+      
+      // Require spike to persist briefly (~150ms) to avoid jitter
+      if (spikeRaw) spikeCount++;
+      else spikeCount = Math.max(0, spikeCount - 1);
+      
+      const spike = spikeCount >= 8; // ~8 frames ≈ 130–160ms depending on fps
+      
+      if (spike) {
+        neutralizer.spike(now);
+        spikeUntil = now + 350;
+      } else {
+        neutralizer.calm(now);
+      }
 
       metricsEl.textContent =
         `arousal: ${arousal.toFixed(3)} | baseline: ${base.toFixed(3)} | level: ${neutralizer.level.toFixed(2)} | mode: ${mode}`;
@@ -205,7 +218,7 @@ async function tick() {
   } else {
     timerEl.textContent = "";
   }
-
+  spikeEl.style.opacity = now < spikeUntil ? "1" : "0";
   requestAnimationFrame(tick);
 }
 
