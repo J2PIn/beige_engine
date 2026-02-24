@@ -33,6 +33,10 @@ const gazeYStats = new RollingStats(180);
 const arousalBaseline = new RollingStats(600); // ~10s baseline
 
 let running = false;
+function setStartUi(isRunning) {
+  startBtn.disabled = isRunning;
+  startBtn.textContent = isRunning ? "Running…" : "Start";
+}
 let mode = "GAME";
 let calibrated = false;
 let calibratingUntil = 0;
@@ -208,10 +212,12 @@ async function tick() {
 // --- UI wiring ---
 startBtn.onclick = async () => {
   if (running) return;
+  setStartUi(false);
   try {
     await initFaceMesh();
     await initCamera();
     running = true;
+    setStartUi(true);
     beginCalibration(10);
     requestAnimationFrame(tick);
   } catch (e) {
