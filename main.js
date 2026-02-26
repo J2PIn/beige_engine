@@ -113,7 +113,9 @@ const neutralizer = new Neutralizer(canvas);
 let videos = [];
 let currentIndex = 0;
 
-initVideoLayer();
+window.addEventListener("DOMContentLoaded", () => {
+  initVideoLayer();
+});
 
 function initVideoLayer() {
   const videoMap = [
