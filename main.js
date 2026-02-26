@@ -107,12 +107,13 @@ let spikeUntil = 0;
 let spikeCount = 0;
 const neutralizer = new Neutralizer(canvas);
 
-initVideoLayer();
 
 
 // --- Video crossfade background engine ---
 let videos = [];
 let currentIndex = 0;
+
+initVideoLayer();
 
 function initVideoLayer() {
   const videoMap = [
