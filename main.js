@@ -424,12 +424,55 @@ function endSession() {
     localStorage.setItem("beige_best", JSON.stringify(session));
   }
 
+  const videoMap = [
+    { id: "v-clouds", threshold: 0.0 },
+    { id: "v-hallway", threshold: 0.25 },
+    { id: "v-wall", threshold: 0.5 },
+    { id: "v-paint", threshold: 0.75 },
+    { id: "v-beige", threshold: 1.0 }
+  ];
+  
+  const videos = videoMap.map(v => ({
+    ...v,
+    el: document.getElementById(v.id)
+  }));
+  
+  videos.forEach(v => {
+    v.el.play();
+    v.el.style.opacity = 0;
+  });
+  
+  let currentIndex = 0;
+  videos[0].el.style.opacity = 1;
+
   const fmt = (ms) => {
     const s = Math.max(0, Math.floor(ms / 1000));
     const mm = String(Math.floor(s / 60)).padStart(2,"0");
     const ss = String(s % 60).padStart(2,"0");
     return `${mm}:${ss}`;
   };
+
+  function setNeutralization(level) {
+    level = Math.max(0, Math.min(1, level));
+  
+    // Find nearest video index
+    let newIndex = 0;
+    for (let i = 0; i < videos.length; i++) {
+      if (level >= videos[i].threshold) {
+        newIndex = i;
+      }
+    }
+  
+    if (newIndex === currentIndex) return;
+  
+    // Fade out current
+    videos[currentIndex].el.style.opacity = 0;
+  
+    // Fade in new
+    videos[newIndex].el.style.opacity = 1;
+  
+    currentIndex = newIndex;
+  }
 
   resultEl.innerHTML =
     `<b>Session complete</b><br>` +
