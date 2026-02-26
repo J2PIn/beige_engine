@@ -4,7 +4,6 @@ import { Neutralizer } from "./neutralization.js";
 console.log("BORING MVP: main.js loaded");
 document.getElementById("status").textContent = "status: script loaded";
 
-initVideoLayer();
 
 // --- Canvas sizing ---
 const canvas = document.getElementById("canvas");
@@ -108,7 +107,9 @@ let spikeUntil = 0;
 let spikeCount = 0;
 const neutralizer = new Neutralizer(canvas);
 
-// --- Video crossfade background engine ---
+initVideoLayer();
+
+
 // --- Video crossfade background engine ---
 let videos = [];
 let currentIndex = 0;
