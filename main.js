@@ -436,11 +436,13 @@ function endSession() {
     ...v,
     el: document.getElementById(v.id)
   }));
-  
+
   videos.forEach(v => {
-    v.el.play();
-    v.el.style.opacity = 0;
-  });
+  v.el.preload = "auto";
+  v.el.muted = true;
+  v.el.playsInline = true;
+});
+  
   
   let currentIndex = 0;
   videos[0].el.style.opacity = 1;
