@@ -487,7 +487,7 @@ function endSession() {
 
   shareBtn.disabled = false;
   dlBtn.disabled = false;
-}
+  }
 
 stopBtn.onclick = () => {
   if (!running) return;
