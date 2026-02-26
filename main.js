@@ -15,6 +15,45 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
+function initVideos() {
+  const vids = Array.from(document.querySelectorAll("#video-layer video"));
+
+  // Make sure properties are set via JS too (Safari is picky)
+  for (const v of vids) {
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.autoplay = true;
+    v.preload = "auto";
+    v.load();
+  }
+
+  async function tryPlayAll() {
+    let ok = 0;
+    for (const v of vids) {
+      try { await v.play(); ok++; } catch (e) {}
+    }
+    document.getElementById("status").textContent = `status: videos playing (${ok}/${vids.length})`;
+    return ok;
+  }
+
+  // First attempt (works on Chrome often)
+  tryPlayAll();
+
+  // Guaranteed attempt: first user interaction
+  const kick = async () => {
+    await tryPlayAll();
+    window.removeEventListener("pointerdown", kick);
+    window.removeEventListener("touchstart", kick);
+    window.removeEventListener("click", kick);
+  };
+  window.addEventListener("pointerdown", kick, { once: true });
+  window.addEventListener("touchstart", kick, { once: true });
+  window.addEventListener("click", kick, { once: true });
+}
+
+initVideos();
+
 let FilesetResolverRef = null;
 let FaceLandmarkerRef = null;
 
