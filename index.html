@@ -29,50 +29,50 @@
     </style>
   </head>
   <body>
-    <div id="video-layer">
-      <video id="v-clouds" src="/clouds.mp4" muted loop playsinline></video>
-      <video id="v-hallway" src="/hallway.mp4" muted loop playsinline></video>
-      <video id="v-wall" src="/wall.mp4" muted loop playsinline></video>
-      <video id="v-paint" src="/paint.mp4" muted loop playsinline></video>
-      <video id="v-beige" src="/beige.mp4" muted loop playsinline></video>
-    </div>
-    <canvas id="canvas"></canvas>
+    <body>
+  <!-- Background videos (ONE layer only) -->
+  <div id="video-layer">
+    <video id="v-clouds" src="/clouds.mp4" muted loop playsinline></video>
+    <video id="v-hallway" src="/hallway.mp4" muted loop playsinline></video>
+    <video id="v-wall" src="/wall.mp4" muted loop playsinline></video>
+    <video id="v-paint" src="/paint.mp4" muted loop playsinline></video>
+    <video id="v-beige" src="/beige.mp4" muted loop playsinline></video>
+  </div>
 
-    <div id="hud">
-      <div><b>BORING MVP</b></div>
-      <div id="status">status: idle</div>
-      <div id="metrics">arousal: - | baseline: - | level: -</div>
-      <div id="spike" style="margin-top:6px; opacity:0;">⚠️ micro-excitement detected</div>
-      <div class="row">
-        <button id="startBtn">Start</button>
-        <button id="modeBtn">Mode: GAME</button>
-        <button id="calBtn">Recalibrate</button>
-      </div>
-      <div class="row">
-        <button id="reset10Btn">Reset: 10:00</button>
-        <span id="timer"></span>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <button id="stopBtn">Stop</button>
-        <button id="shareBtn" disabled>Share</button>
-        <button id="copyBtn">Copy link</button>
-        <button id="dlBtn" disabled>Download</button>
-      </div>
-      <div id="result" style="margin-top:8px; font-size:12px;"></div>
-        <span id="timer"></span>
-      </div>
-    </div>
-    <div id="video-layer">
-      <video id="v-clouds" src="/clouds.mp4" muted loop playsinline></video>
-      <video id="v-hallway" src="/hallway.mp4" muted loop playsinline></video>
-      <video id="v-wall" src="/wall.mp4" muted loop playsinline></video>
-      <video id="v-paint" src="/paint.mp4" muted loop playsinline></video>
-      <video id="v-beige" src="/beige.mp4" muted loop playsinline></video>
-    </div>
-    
+  <!-- Your render canvas -->
+  <canvas id="canvas"></canvas>
 
-    <video id="video" autoplay playsinline muted></video>
+  <!-- HUD -->
+  <div id="hud">
+    <div><b>BORING MVP</b></div>
+    <div id="status">status: idle</div>
+    <div id="metrics">arousal: - | baseline: - | level: -</div>
+    <div id="spike" style="margin-top:6px; opacity:0;">⚠️ micro-excitement detected</div>
 
-    <script type="module" src="./main.js?v=22"></script>
+    <div class="row">
+      <button id="startBtn">Start</button>
+      <button id="modeBtn">Mode: GAME</button>
+      <button id="calBtn">Recalibrate</button>
+    </div>
+
+    <div class="row">
+      <button id="reset10Btn">Reset: 10:00</button>
+      <span id="timer"></span>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button id="stopBtn">Stop</button>
+      <button id="shareBtn" disabled>Share</button>
+      <button id="copyBtn">Copy link</button>
+      <button id="dlBtn" disabled>Download</button>
+    </div>
+
+    <div id="result" style="margin-top:8px; font-size:12px;"></div>
+  </div>
+
+  <!-- Camera video (hidden by default; main.js uses it for MediaPipe) -->
+  <video id="video" autoplay playsinline muted style="display:none"></video>
+
+  <script type="module" src="./main.js?v=23"></script>
   </body>
 </html>
