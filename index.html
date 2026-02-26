@@ -47,6 +47,28 @@
         <span id="timer"></span>
       </div>
     </div>
+    <div id="video-layer">
+      <video id="v-clouds" src="/clouds.mp4" muted loop playsinline></video>
+      <video id="v-hallway" src="/hallway.mp4" muted loop playsinline></video>
+      <video id="v-wall" src="/wall.mp4" muted loop playsinline></video>
+      <video id="v-paint" src="/paint.mp4" muted loop playsinline></video>
+      <video id="v-beige" src="/beige.mp4" muted loop playsinline></video>
+    </div>
+    #video-layer {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
+    
+    #video-layer video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
 
     <video id="video" autoplay playsinline muted></video>
 
