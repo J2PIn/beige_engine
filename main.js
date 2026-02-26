@@ -159,6 +159,11 @@ function setNeutralization(level) {
   videos[currentIndex].el.style.opacity = 0;
   videos[newIndex].el.style.opacity = 1;
   currentIndex = newIndex;
+
+    // TEMP: force clouds visible
+  const vc = document.getElementById("v-clouds");
+  if (vc) vc.style.opacity = "1";
+  console.log("forced clouds opacity 1");
 }
 // --- Rolling stats ---
 const gazeXStats = new RollingStats(180); // ~3s at 60fps
