@@ -115,6 +115,12 @@ const videoMap = [
   { id: "v-beige", threshold: 1.0 }
 ];
 
+console.log("VIDEO NODES:", videos.map(v => ({
+  id: v.id,
+  found: !!v.el,
+  src: v.el?.getAttribute("src"),
+})));
+
 const videos = videoMap.map(v => ({
   ...v,
   el: document.getElementById(v.id)
