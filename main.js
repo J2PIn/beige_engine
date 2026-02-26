@@ -4,6 +4,8 @@ import { Neutralizer } from "./neutralization.js";
 console.log("BORING MVP: main.js loaded");
 document.getElementById("status").textContent = "status: script loaded";
 
+initVideoLayer();
+
 // --- Canvas sizing ---
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -107,34 +109,39 @@ let spikeCount = 0;
 const neutralizer = new Neutralizer(canvas);
 
 // --- Video crossfade background engine ---
-const videoMap = [
-  { id: "v-clouds", threshold: 0.0 },
-  { id: "v-hallway", threshold: 0.25 },
-  { id: "v-wall", threshold: 0.5 },
-  { id: "v-paint", threshold: 0.75 },
-  { id: "v-beige", threshold: 1.0 }
-];
-
-console.log("VIDEO NODES:", videos.map(v => ({
-  id: v.id,
-  found: !!v.el,
-  src: v.el?.getAttribute("src"),
-})));
-
-const videos = videoMap.map(v => ({
-  ...v,
-  el: document.getElementById(v.id)
-})).filter(v => v.el); // tolerate missing nodes
-
-videos.forEach(v => {
-  v.el.preload = "auto";
-  v.el.muted = true;
-  v.el.playsInline = true;
-  v.el.style.opacity = 0;
-});
-
+// --- Video crossfade background engine ---
+let videos = [];
 let currentIndex = 0;
-if (videos[0]) videos[0].el.style.opacity = 1;
+
+function initVideoLayer() {
+  const videoMap = [
+    { id: "v-clouds", threshold: 0.0 },
+    { id: "v-hallway", threshold: 0.25 },
+    { id: "v-wall", threshold: 0.5 },
+    { id: "v-paint", threshold: 0.75 },
+    { id: "v-beige", threshold: 1.0 }
+  ];
+
+  videos = videoMap
+    .map(v => ({ ...v, el: document.getElementById(v.id) }))
+    .filter(v => v.el);
+
+  console.log("VIDEO NODES:", videos.map(v => ({
+    id: v.id,
+    found: !!v.el,
+    src: v.el.getAttribute("src")
+  })));
+
+  videos.forEach(v => {
+    v.el.preload = "auto";
+    v.el.muted = true;
+    v.el.playsInline = true;
+    v.el.style.opacity = 0;
+  });
+
+  currentIndex = 0;
+  if (videos[0]) videos[0].el.style.opacity = 1;
+}
 
 function setNeutralization(level) {
   if (!videos.length) return;
@@ -145,14 +152,12 @@ function setNeutralization(level) {
   for (let i = 0; i < videos.length; i++) {
     if (level >= videos[i].threshold) newIndex = i;
   }
-
   if (newIndex === currentIndex) return;
 
   videos[currentIndex].el.style.opacity = 0;
   videos[newIndex].el.style.opacity = 1;
   currentIndex = newIndex;
 }
-
 // --- Rolling stats ---
 const gazeXStats = new RollingStats(180); // ~3s at 60fps
 const gazeYStats = new RollingStats(180);
@@ -408,9 +413,9 @@ startBtn.onclick = async () => {
   try {
     await initFaceMesh();
     await initCamera();
-    // Start background videos (must be triggered by user gesture on many browsers)
+    // Start background videos (needs user gesture on many browsers)
     for (const v of videos) {
-      try { await v.el.play(); } catch (_) {}
+      try { await v.el.play(); } catch (e) { console.warn("play() failed", v.id, e); }
     }
     running = true;
     sessionStart = performance.now();
