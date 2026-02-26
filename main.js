@@ -1,5 +1,5 @@
 import { RollingStats, computeArousal, clamp01 } from "./arousal.js";
-import { Neutralizer } from "./neutralization.js";
+import { VideoNeutralizer } from "./neutralization.js";
 
 console.log("BORING MVP: main.js loaded");
 document.getElementById("status").textContent = "status: script loaded";
@@ -104,7 +104,7 @@ let spikeState = false;
 const spikeEl = document.getElementById("spike");
 let spikeUntil = 0;
 let spikeCount = 0;
-const neutralizer = new Neutralizer(canvas);
+const neutralizer = new VideoNeutralizer(canvas);
 
 // --- Rolling stats ---
 const gazeXStats = new RollingStats(180); // ~3s at 60fps
