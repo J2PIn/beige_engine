@@ -200,7 +200,9 @@ export class VideoNeutralizer {
     }
 
     // fade in other
-    ctx.globalAlpha = this.fade;
+    const t = this.fade;
+    const eased = t * t * (3 - 2 * t); // smoothstep
+    ctx.globalAlpha = eased;
     if (otherReady) this._drawCover(otherVid);
 
     ctx.restore();
