@@ -11,6 +11,7 @@
         position: fixed;
         inset: 0;
         overflow: hidden;
+        pointer-events: none;
         z-index: 0;
       }
 
@@ -21,14 +22,13 @@
         height: 100%;
         object-fit: cover;
         opacity: 0;
-        transition: opacity 1.2s ease-in-out;
+        transition: opacity 500ms linear;
       }
 
       #canvas {
-        display: none; /* temp test*/
         position: fixed;
         inset: 0;
-        z-index: 5;
+        z-index: 1;
         pointer-events: none;
       }
 
@@ -43,6 +43,7 @@
         padding: 16px;
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       }
+      #v-beige { opacity: 1; }
 
       .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
       button { padding: 10px 14px; border-radius: 14px; border: 1px solid #ddd; background: white; }
@@ -55,11 +56,11 @@
   <body>
     <!-- Background videos (ONE layer only) -->
     <div id="video-layer">
-      <video id="v-clouds" src="./assets/video/clouds.mp4" muted loop playsinline></video>
-      <video id="v-hallway" src="./assets/video/hallway.mp4" muted loop playsinline></video>
-      <video id="v-wall" src="./assets/video/wall.mp4" muted loop playsinline></video>
-      <video id="v-paint" src="./assets/video/paint.mp4" muted loop playsinline></video>
-      <video id="v-beige" src="./assets/video/beige.mp4" muted loop playsinline></video>
+      <video id="v-clouds"   src="./assets/video/clouds.mp4"   muted loop autoplay playsinline preload="auto"></video>
+      <video id="v-hallway"  src="./assets/video/hallway.mp4"  muted loop autoplay playsinline preload="auto"></video>
+      <video id="v-wall"     src="./assets/video/wall.mp4"     muted loop autoplay playsinline preload="auto"></video>
+      <video id="v-paint"    src="./assets/video/paint.mp4"    muted loop autoplay playsinline preload="auto"></video>
+      <video id="v-beige"    src="./assets/video/beige.mp4"    muted loop autoplay playsinline preload="auto"></video>
     </div>
     
 
