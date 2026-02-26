@@ -106,6 +106,47 @@ let spikeUntil = 0;
 let spikeCount = 0;
 const neutralizer = new VideoNeutralizer(canvas);
 
+// --- Video crossfade background engine ---
+const videoMap = [
+  { id: "v-clouds", threshold: 0.0 },
+  { id: "v-hallway", threshold: 0.25 },
+  { id: "v-wall", threshold: 0.5 },
+  { id: "v-paint", threshold: 0.75 },
+  { id: "v-beige", threshold: 1.0 }
+];
+
+const videos = videoMap.map(v => ({
+  ...v,
+  el: document.getElementById(v.id)
+})).filter(v => v.el); // tolerate missing nodes
+
+videos.forEach(v => {
+  v.el.preload = "auto";
+  v.el.muted = true;
+  v.el.playsInline = true;
+  v.el.style.opacity = 0;
+});
+
+let currentIndex = 0;
+if (videos[0]) videos[0].el.style.opacity = 1;
+
+function setNeutralization(level) {
+  if (!videos.length) return;
+
+  level = Math.max(0, Math.min(1, level));
+
+  let newIndex = 0;
+  for (let i = 0; i < videos.length; i++) {
+    if (level >= videos[i].threshold) newIndex = i;
+  }
+
+  if (newIndex === currentIndex) return;
+
+  videos[currentIndex].el.style.opacity = 0;
+  videos[newIndex].el.style.opacity = 1;
+  currentIndex = newIndex;
+}
+
 // --- Rolling stats ---
 const gazeXStats = new RollingStats(180); // ~3s at 60fps
 const gazeYStats = new RollingStats(180);
@@ -238,6 +279,8 @@ async function tick() {
 
   // Render boring content continuously
   neutralizer.step(now);
+  // ✅ Crossfade background videos based on neutralization level
+  setNeutralization(neutralizer.level);
 
   // Run face landmark detection
   if (faceLandmarker && video.readyState >= 2) {
@@ -305,15 +348,7 @@ async function tick() {
         neutralizer.calm(now);
       }
       
-      if (spike) {
-        spikeTotal += 1;
-        if (firstSpikeAt === null) firstSpikeAt = now;
-      
-        neutralizer.spike(now);
-        spikeUntil = now + 350;
-      } else {
-        neutralizer.calm(now);
-      }
+    
 
       metricsEl.textContent =
         `arousal: ${arousal.toFixed(3)} | baseline: ${base.toFixed(3)} | level: ${neutralizer.level.toFixed(2)} | mode: ${mode}`;
@@ -367,6 +402,10 @@ startBtn.onclick = async () => {
   try {
     await initFaceMesh();
     await initCamera();
+    // Start background videos (must be triggered by user gesture on many browsers)
+    for (const v of videos) {
+      try { await v.el.play(); } catch (_) {}
+    }
     running = true;
     sessionStart = performance.now();
     lastArousal = 0;
@@ -424,46 +463,7 @@ function endSession() {
     localStorage.setItem("beige_best", JSON.stringify(session));
   }
 
-  const videoMap = [
-    { id: "v-clouds", threshold: 0.0 },
-    { id: "v-hallway", threshold: 0.25 },
-    { id: "v-wall", threshold: 0.5 },
-    { id: "v-paint", threshold: 0.75 },
-    { id: "v-beige", threshold: 1.0 }
-  ];
   
-  const videos = videoMap.map(v => ({
-    ...v,
-    el: document.getElementById(v.id)
-  }));
-
-  videos.forEach(v => {
-  v.el.preload = "auto";
-  v.el.muted = true;
-  v.el.playsInline = true;
-});
-  
-  
-  let currentIndex = 0;
-  videos[0].el.style.opacity = 1;
-
-  const fmt = (ms) => {
-    const s = Math.max(0, Math.floor(ms / 1000));
-    const mm = String(Math.floor(s / 60)).padStart(2,"0");
-    const ss = String(s % 60).padStart(2,"0");
-    return `${mm}:${ss}`;
-  };
-
-  function setNeutralization(level) {
-    level = Math.max(0, Math.min(1, level));
-  
-    // Find nearest video index
-    let newIndex = 0;
-    for (let i = 0; i < videos.length; i++) {
-      if (level >= videos[i].threshold) {
-        newIndex = i;
-      }
-    }
   
     if (newIndex === currentIndex) return;
   
@@ -520,4 +520,12 @@ if (shareBtn) shareBtn.onclick = async () => {
     // fallback: download
     dlBtn?.click();
   }
+  const DEBUG_MOUSE = false;
+
+if (DEBUG_MOUSE) {
+  window.addEventListener("mousemove", (e) => {
+    const level = e.clientX / window.innerWidth;
+    setNeutralization(level);
+  });
+}
 };
