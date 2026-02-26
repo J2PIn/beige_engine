@@ -463,24 +463,11 @@ function endSession() {
     localStorage.setItem("beige_best", JSON.stringify(session));
   }
 
-  
-  
-    if (newIndex === currentIndex) return;
-  
-    // Fade out current
-    videos[currentIndex].el.style.opacity = 0;
-  
-    // Fade in new
-    videos[newIndex].el.style.opacity = 1;
-  
-    currentIndex = newIndex;
-  }
-
   resultEl.innerHTML =
     `<b>Session complete</b><br>` +
     `Mode: ${session.mode}<br>` +
-    `Duration: ${fmt(session.durationMs)}<br>` +
-    `Time to first spike: ${session.tFirstSpikeMs == null ? "none" : fmt(session.tFirstSpikeMs)}<br>` +
+    `Duration: ${formatMs(session.durationMs)}<br>` +
+    `Time to first spike: ${session.tFirstSpikeMs == null ? "none" : formatMs(session.tFirstSpikeMs)}<br>` +
     `Spikes: ${session.spikes}<br>` +
     `Avg arousal: ${session.avgArousal.toFixed(3)}<br>` +
     `Max level: ${session.maxLevel.toFixed(2)}<br>`;
@@ -494,6 +481,7 @@ stopBtn.onclick = () => {
   endSession();
   stopRun();
 };
+
 if (dlBtn) dlBtn.onclick = async () => {
   if (!session) endSession();
   if (!lastCardBlob) lastCardBlob = await makeShareCardBlob();
@@ -520,12 +508,13 @@ if (shareBtn) shareBtn.onclick = async () => {
     // fallback: download
     dlBtn?.click();
   }
-  const DEBUG_MOUSE = false;
+};
 
+// DEBUG MOUSE (optional) — keep OUTSIDE handlers
+const DEBUG_MOUSE = false;
 if (DEBUG_MOUSE) {
   window.addEventListener("mousemove", (e) => {
     const level = e.clientX / window.innerWidth;
     setNeutralization(level);
   });
 }
-};
