@@ -194,10 +194,11 @@ async function initFaceMesh() {
   });
 
   statusEl.textContent = "status: model loaded";
-  }
-  async function initCamera() {
-    statusEl.textContent = "status: requesting camera…";
-    cameraStream = await navigator.mediaDevices.getUserMedia({
+}
+
+async function initCamera() {
+  statusEl.textContent = "status: requesting camera…";
+  cameraStream = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
     audio: false,
   });
@@ -205,7 +206,6 @@ async function initFaceMesh() {
   await video.play();
   statusEl.textContent = "status: camera active";
 }
-
 // Eye landmark indices (MediaPipe Face Mesh):
 // We'll use iris centers if available. Iris landmarks:
 // Left iris: 468..472, Right iris: 473..477 (in classic FaceMesh).
