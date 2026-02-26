@@ -5,74 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BORING MVP</title>
     <style>
+      html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+
       #video-layer {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      z-index: 0;           /* not -1 */
-    }
-    
-    #video-layer video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 1.2s ease-in-out;
-    }
-    
-    #app, #hud, #overlay, #canvas {
-      position: relative;
-      z-index: 10;
-    }
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        z-index: 0;
+      }
+
+      #video-layer video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 1.2s ease-in-out;
+      }
+
+      #canvas {
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      #hud {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 10;
+        max-width: 520px;
+        background: rgba(255,255,255,0.92);
+        border-radius: 16px;
+        padding: 16px;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      }
+
+      .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+      button { padding: 10px 14px; border-radius: 14px; border: 1px solid #ddd; background: white; }
+      button:disabled { opacity: 0.5; }
+
+      #spike { transition: opacity 0.15s linear; }
     </style>
   </head>
+
   <body>
-    <body>
-  <!-- Background videos (ONE layer only) -->
-  <div id="video-layer">
-    <video id="v-clouds" src="/clouds.mp4" muted loop playsinline></video>
-    <video id="v-hallway" src="/hallway.mp4" muted loop playsinline></video>
-    <video id="v-wall" src="/wall.mp4" muted loop playsinline></video>
-    <video id="v-paint" src="/paint.mp4" muted loop playsinline></video>
-    <video id="v-beige" src="/beige.mp4" muted loop playsinline></video>
-  </div>
-
-  <!-- Your render canvas -->
-  <canvas id="canvas"></canvas>
-
-  <!-- HUD -->
-  <div id="hud">
-    <div><b>BORING MVP</b></div>
-    <div id="status">status: idle</div>
-    <div id="metrics">arousal: - | baseline: - | level: -</div>
-    <div id="spike" style="margin-top:6px; opacity:0;">⚠️ micro-excitement detected</div>
-
-    <div class="row">
-      <button id="startBtn">Start</button>
-      <button id="modeBtn">Mode: GAME</button>
-      <button id="calBtn">Recalibrate</button>
+    <!-- Background videos (ONE layer only) -->
+    <div id="video-layer">
+      <video id="v-clouds" src="/clouds.mp4" muted loop playsinline></video>
+      <video id="v-hallway" src="/hallway.mp4" muted loop playsinline></video>
+      <video id="v-wall" src="/wall.mp4" muted loop playsinline></video>
+      <video id="v-paint" src="/paint.mp4" muted loop playsinline></video>
+      <video id="v-beige" src="/beige.mp4" muted loop playsinline></video>
     </div>
 
-    <div class="row">
-      <button id="reset10Btn">Reset: 10:00</button>
-      <span id="timer"></span>
+    <canvas id="canvas"></canvas>
+
+    <div id="hud">
+      <div><b>BORING MVP</b></div>
+      <div id="status">status: idle</div>
+      <div id="metrics">arousal: - | baseline: - | level: -</div>
+      <div id="spike" style="margin-top:6px; opacity:0;">⚠️ micro-excitement detected</div>
+
+      <div class="row">
+        <button id="startBtn">Start</button>
+        <button id="modeBtn">Mode: GAME</button>
+        <button id="calBtn">Recalibrate</button>
+      </div>
+
+      <div class="row">
+        <button id="reset10Btn">Reset: 10:00</button>
+        <span id="timer"></span>
+      </div>
+
+      <div class="row">
+        <button id="stopBtn">Stop</button>
+        <button id="shareBtn" disabled>Share</button>
+        <button id="copyBtn">Copy link</button>
+        <button id="dlBtn" disabled>Download</button>
+      </div>
+
+      <div id="result" style="margin-top:8px; font-size:12px;"></div>
     </div>
 
-    <div class="row" style="margin-top:10px">
-      <button id="stopBtn">Stop</button>
-      <button id="shareBtn" disabled>Share</button>
-      <button id="copyBtn">Copy link</button>
-      <button id="dlBtn" disabled>Download</button>
-    </div>
+    <!-- Camera feed for MediaPipe (HIDDEN) -->
+    <video id="video" autoplay playsinline muted style="display:none"></video>
 
-    <div id="result" style="margin-top:8px; font-size:12px;"></div>
-  </div>
-
-  <!-- Camera video (hidden by default; main.js uses it for MediaPipe) -->
-  <video id="video" autoplay playsinline muted style="display:none"></video>
-
-  <script type="module" src="./main.js?v=23"></script>
+    <!-- Cache-bust so you *know* you're loading the new JS -->
+    <script type="module" src="./main.js?v=23"></script>
   </body>
 </html>
