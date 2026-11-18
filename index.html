@@ -1,102 +1,23 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BORING MVP</title>
-    <style>
-      html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-
-      #video-layer {
-        position: fixed;
-        inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: 0;
-      }
-
-      #video-layer video {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0;
-        transition: opacity 500ms linear;
-      }
-
-      #canvas {
-        position: fixed;
-        inset: 0;
-        z-index: 1;
-        pointer-events: none;
-      }
-
-      #hud {
-        position: fixed;
-        top: 16px;
-        left: 16px;
-        z-index: 10;
-        max-width: 520px;
-        background: rgba(255,255,255,0.92);
-        border-radius: 16px;
-        padding: 16px;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      }
-      #v-beige { opacity: 1; }
-
-      .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-      button { padding: 10px 14px; border-radius: 14px; border: 1px solid #ddd; background: white; }
-      button:disabled { opacity: 0.5; }
-
-      #spike { transition: opacity 0.15s linear; }
-    </style>
-  </head>
-
-  <body>
-    <!-- Background videos (ONE layer only) -->
-    <div id="video-layer">
-      <video id="v-clouds"   src="./assets/video/clouds.mp4"   muted loop autoplay playsinline preload="auto"></video>
-      <video id="v-hallway"  src="./assets/video/hallway.mp4"  muted loop autoplay playsinline preload="auto"></video>
-      <video id="v-wall"     src="./assets/video/wall.mp4"     muted loop autoplay playsinline preload="auto"></video>
-      <video id="v-paint"    src="./assets/video/paint.mp4"    muted loop autoplay playsinline preload="auto"></video>
-      <video id="v-beige"    src="./assets/video/beige.mp4"    muted loop autoplay playsinline preload="auto"></video>
-    </div>
-    
-
-    <canvas id="canvas"></canvas>
-
-    <div id="hud">
-      <div><b>BORING MVP</b></div>
-      <div id="status">status: idle</div>
-      <div id="metrics">arousal: - | baseline: - | level: -</div>
-      <div id="spike" style="margin-top:6px; opacity:0;">⚠️ micro-excitement detected</div>
-
-      <div class="row">
-        <button id="startBtn">Start</button>
-        <button id="modeBtn">Mode: GAME</button>
-        <button id="calBtn">Recalibrate</button>
-      </div>
-
-      <div class="row">
-        <button id="reset10Btn">Reset: 10:00</button>
-        <span id="timer"></span>
-      </div>
-
-      <div class="row">
-        <button id="stopBtn">Stop</button>
-        <button id="shareBtn" disabled>Share</button>
-        <button id="copyBtn">Copy link</button>
-        <button id="dlBtn" disabled>Download</button>
-      </div>
-
-      <div id="result" style="margin-top:8px; font-size:12px;"></div>
-    </div>
-
-    <!-- Camera feed for MediaPipe (HIDDEN) -->
-    <video id="video" autoplay playsinline muted style="display:none"></video>
-
-    <!-- Cache-bust so you *know* you're loading the new JS -->
-    <script type="module" src="./main.js?v=25"></script>
-  </body>
-</html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Beige Engine — The world's least exciting interactive experiment</title>
+<meta name="description" content="An interactive anti-stimulation experiment that gets progressively more boring. Try the 60-second boredom game or a quiet 10-minute reset. No account required.">
+<link rel="canonical" href="https://beigengine.app/">
+<meta name="theme-color" content="#e9e3d7">
+<meta property="og:type" content="website"><meta property="og:title" content="Beige Engine — Less is unfortunately more"><meta property="og:description" content="An interactive anti-stimulation experiment. If you get excited, it gets more beige."><meta property="og:url" content="https://beigengine.app/">
+<meta property="og:image" content="https://beigengine.app/og-card.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<style>
+:root{--paper:#e9e3d7;--paper2:#f3eee5;--ink:#302e28;--muted:#777064;--line:#c6beaf;--accent:#857963;--white:#fffdf7}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}button{font:inherit;cursor:pointer}a{color:inherit}header{max-width:1280px;margin:auto;padding:21px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}.brand{display:flex;gap:11px;align-items:center;font-weight:800;letter-spacing:.18em;font-size:12px}.logo{width:31px;height:31px;background:#a79c88;border:7px solid #d4cabb;border-radius:50%;box-shadow:0 0 0 1px #968d7c}.dept{font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}.wrap{max-width:1280px;margin:0 auto;padding:40px 32px 70px}.eyebrow{letter-spacing:.21em;font-size:11px;font-weight:750;color:#736c5e;text-transform:uppercase}.hero{display:grid;grid-template-columns:.94fr 1.06fr;gap:42px;align-items:start}.intro{padding-top:44px}.intro h1{font-family:Georgia,'Times New Roman',serif;font-size:clamp(48px,5.4vw,82px);line-height:1.04;letter-spacing:-.065em;font-weight:400;margin:19px 0 20px}.intro h1 em{font-style:normal;color:#8a8170}.desc{max-width:460px;font-size:19px;line-height:1.5;color:#5a554b}.fine{font-size:12px;color:#716b5f}.controls{display:flex;gap:10px;flex-wrap:wrap;margin:27px 0 18px}.btn{padding:13px 19px;border:1px solid var(--ink);background:var(--ink);color:var(--white);border-radius:4px;font-weight:650}.btn:hover{filter:brightness(1.2)}.btn.secondary{background:transparent;color:var(--ink);border-color:#9a9182}.btn:disabled{opacity:.4;cursor:not-allowed}.toggle{display:flex;align-items:center;gap:10px;font-size:13px;color:#59534a;cursor:pointer;margin-top:15px}.toggle input{accent-color:#605b51;width:17px;height:17px}.note{padding:13px 15px;border-left:2px solid #9b907d;background:#e0d8ca;margin-top:20px;max-width:480px}.note strong{font-size:11px;letter-spacing:.14em}.stage{border:1px solid #b8ae9c;background:#c2b6a2;box-shadow:12px 12px 0 #d3cabd}.stagehead{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f0ece4;border-bottom:1px solid #b8ae9c;padding:13px 17px;font-size:11px;letter-spacing:.14em;font-weight:700}.live{display:flex;gap:8px;align-items:center}.dot{width:7px;height:7px;background:#908670;border-radius:50%}.screen{height:clamp(330px,39vw,490px);overflow:hidden;position:relative;background:radial-gradient(ellipse at 28% 20%,#e3ddd2,#afa48f);isolation:isolate}.screen:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(25,23,20,.57),transparent 32%);z-index:3}.screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1s ease;z-index:1}.screen video.active{opacity:1}.screen-label{position:absolute;z-index:4;bottom:23px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:end;color:#fff}.screen-label strong{font:38px/1.1 Georgia,serif;font-weight:400}.screen-label span{font-size:11px;letter-spacing:.16em;opacity:.8}.screen-caption{position:absolute;z-index:4;top:20px;left:21px;background:#e9e3d8e8;border:1px solid #aea591;padding:7px 10px;font-size:10px;letter-spacing:.12em}.meter{padding:17px;background:#e9e4da}.meterrow{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.07em}.track{height:6px;background:#c4bcaf;overflow:hidden;margin:11px 0}.fill{height:100%;background:#675e51;width:0;transition:width .4s}.stages{display:flex;justify-content:space-between;color:#777064;font-size:10px;letter-spacing:.08em;gap:3px}.stats{margin-top:19px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{border:1px solid var(--line);padding:13px 15px;background:#ede7dc}.stat .number{font:30px Georgia,serif}.stat .key{font-size:10px;letter-spacing:.13em;color:#776f62;text-transform:uppercase}.status{font-size:12px;color:#655e54;min-height:21px;margin-top:11px}.result{background:#ded6c8;border:1px solid #aea38f;padding:18px;margin-top:20px;display:none}.result h3{margin:0 0 4px;font:29px Georgia,serif}.result p{margin:5px 0 13px}.result.show{display:block}.how{border-top:1px solid var(--line);margin-top:75px;padding-top:22px}.how h2{font:35px Georgia,serif;font-weight:400}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}.step{border-top:1px solid #a89e8e;padding-top:16px}.step b{font-size:13px}.step p{font-size:14px;color:#6f6659;max-width:350px}footer{border-top:1px solid var(--line);padding:24px 0 0;margin-top:68px;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;font-size:12px;color:#716a5f}.quiet{font:italic 17px Georgia,serif}@media(max-width:900px){.hero{grid-template-columns:1fr}.intro{padding-top:3px}.screen{height:390px}}@media(max-width:520px){header{padding:16px 18px}.wrap{padding:20px 18px}.intro h1{font-size:49px}.desc{font-size:17px}.stage{box-shadow:6px 6px 0 #d3cabd}.screen{height:320px}.screen-label strong{font-size:30px}.stages{font-size:8px}.stats{grid-template-columns:repeat(3,1fr);gap:6px}.stat{padding:10px}.stat .number{font-size:25px}.steps{grid-template-columns:1fr}.how{margin-top:45px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><span class="logo" aria-hidden="true"></span><span>BEIGE ENGINE</span></div><div class="dept">Department of Controlled Monotony · Experimental release 01</div></header>
+<main class="wrap">
+<div class="hero"><section class="intro"><div class="eyebrow">Your stimulation is being reviewed.</div><h1>Less exciting.<br><em>By design.</em></h1><p class="desc">An interactive experiment that responds to activity by becoming progressively more boring. Five stages. No rewards. Eventually, beige.</p><div class="controls"><button class="btn" id="game">Start 60-second game</button><button class="btn secondary" id="reset">10-minute quiet reset</button><button class="btn secondary" id="stop" disabled>End session</button></div><label class="toggle"><input type="checkbox" id="camera"> <span>Opt in to webcam eye-movement mode</span></label><p class="fine">Without a webcam, mouse or touch activity drives the experiment. Webcam processing, when enabled, happens locally in your browser. No account or video upload.</p><div class="note"><strong>OFFICIAL NON-CLAIM</strong><div class="fine">This is art, satire, and a behavior experiment—not a clinical measure of arousal, dopamine, attention, or mental health.</div></div><div id="result" class="result" aria-live="polite"><h3 id="resultTitle">Session complete.</h3><p id="resultText"></p><div class="controls"><button class="btn" id="share">Share result</button><button class="btn secondary" id="copy">Copy result</button></div></div></section>
+<section><div class="stage"><div class="stagehead"><span>NEUTRALIZATION FEED // 001</span><span class="live"><i class="dot"></i><span id="liveStatus">STANDBY</span></span></div><div class="screen" id="screen"><video id="v0" muted autoplay loop playsinline preload="metadata" poster=""></video><video id="v1" muted loop playsinline preload="none"></video><video id="v2" muted loop playsinline preload="none"></video><video id="v3" muted loop playsinline preload="none"></video><video id="v4" muted loop playsinline preload="none"></video><div class="screen-caption" id="screenCaption">PLEASE REMAIN UNIMPRESSED</div><div class="screen-label"><strong id="stageTitle">Clouds</strong><span id="stageIndex">STAGE 01 / 05</span></div></div><div class="meter"><div class="meterrow"><span>NEUTRALIZATION PROGRESS</span><span id="pct">0%</span></div><div class="track"><div class="fill" id="progress"></div></div><div class="stages"><span>CLOUDS</span><span>HALLWAY</span><span>WALL</span><span>PAINT</span><span>BEIGE</span></div></div></div><div class="stats"><div class="stat"><div id="time" class="number">01:00</div><div class="key">Time left</div></div><div class="stat"><div id="spikes" class="number">0</div><div class="key">Excitement incidents</div></div><div class="stat"><div id="score" class="number">—</div><div class="key">Unexcited streak</div></div></div><div class="status" id="status" role="status" aria-live="polite">Standing by. The system expects very little.</div></section></div>
+<div class="how"><div class="eyebrow">Technical documentation, regrettably</div><h2>How to become less interesting</h2><div class="steps"><div class="step"><b>01 / Begin</b><p>Choose a one-minute challenge or a 10-minute quiet session. No signup, timer starts immediately.</p></div><div class="step"><b>02 / Make an incident</b><p>Your pointer activity—or optional on-device webcam gaze movement—can trigger an excitement incident.</p></div><div class="step"><b>03 / Observe the consequence</b><p>Each incident moves the visual feed toward greater monotony. Your reward for activity is more beige.</p></div></div></div>
+<footer><span>© 2026 Beige Engine · A Release Studio experiment</span><span class="quiet">A profound absence of urgency.</span><span><a href="./privacy.html">Privacy & limitations</a></span></footer>
+</main><script type="module" src="./main.js?v=ph-20261119-1"></script>
+</body></html>
