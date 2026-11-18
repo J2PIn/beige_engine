@@ -10,7 +10,7 @@ videos.forEach((video,i)=>{ video.src=paths[i]; video.muted=true; video.loop=tru
 
 const game=$('game'),reset=$('reset'),stop=$('stop'),camera=$('camera'),status=$('status'),result=$('result'),sensor=$('sensor');
 let active=false,preparing=false,mode='GAME',remaining=60,started=0,deadline=0,streakStart=0,bestStreak=0,incidents=0,level=0,lastIncident=-Infinity,raf=0;
-let cameraStream=null,faceModel=null,camVideo=null,lastFeatures=null,lastDetectedAt=0,trackedFrames=0;
+let cameraStream=null,faceModel=null,camVideo=null,lastFeatures=null,lastDetectedAt=0,trackedFrames=0,frameCanvas=null,frameCtx=null,compatMode=false;
 let lastResult='',lastPointer=null,pointerDistance=0,pointerWindow=0;
 
 function msg(value){status.textContent=value}
@@ -79,6 +79,9 @@ async function setupCamera(){
     lastFeatures=null;
     lastDetectedAt=0;
     trackedFrames=0;
+    frameCanvas=null;
+    frameCtx=null;
+    compatMode=false;
     sensorMsg('Webcam: connected · looking for a face…');
     return true;
   }catch(error){
@@ -98,16 +101,54 @@ function cleanupCamera(){
   faceModel=null;
   if(camVideo){camVideo.pause();camVideo.srcObject=null;camVideo=null}
   lastFeatures=null;
+  frameCanvas=null;
+  frameCtx=null;
+  compatMode=false;
+}
+function shortError(error){
+  return String(error?.message||error||'Unknown camera error').replace(/\s+/g,' ').slice(0,155);
+}
+function detectViaCanvas(now){
+  if(!frameCanvas){
+    frameCanvas=document.createElement('canvas');
+    frameCtx=frameCanvas.getContext('2d',{willReadFrequently:true});
+    if(!frameCtx)throw new Error('Canvas 2D context unavailable');
+  }
+  // Canvas, video, and face landmarks all stay inside this browser session.
+  frameCanvas.width=camVideo.videoWidth;
+  frameCanvas.height=camVideo.videoHeight;
+  frameCtx.drawImage(camVideo,0,0,frameCanvas.width,frameCanvas.height);
+  return faceModel.detectForVideo(frameCanvas,now);
 }
 function detectGaze(now){
-  if(!faceModel||!camVideo||camVideo.readyState<2||now-lastDetectedAt<120)return;
+  if(!faceModel||!camVideo||now-lastDetectedAt<120)return;
+  if(camVideo.readyState<2||camVideo.videoWidth<2||camVideo.videoHeight<2){
+    sensorMsg(`Webcam: waiting for a valid frame (ready ${camVideo.readyState}; ${camVideo.videoWidth}×${camVideo.videoHeight})`);
+    return;
+  }
   lastDetectedAt=now;
   let response;
-  try{response=faceModel.detectForVideo(camVideo,now)}
-  catch(error){
-    console.warn('Camera frame:',error);
-    sensorMsg('Webcam: tracking error (inspect browser console).');
-    return;
+  try{
+    response=compatMode?detectViaCanvas(now):faceModel.detectForVideo(camVideo,now);
+  }catch(firstError){
+    if(compatMode){
+      console.warn('Camera canvas frame:',firstError);
+      sensorMsg(`Webcam failed: ${shortError(firstError)}. Switching to pointer/touch.`);
+      cleanupCamera();
+      camera.checked=false;
+      return;
+    }
+    console.warn('Camera video frame:',firstError);
+    try{
+      response=detectViaCanvas(now);
+      compatMode=true;
+    }catch(secondError){
+      console.warn('Camera canvas fallback:',secondError);
+      sensorMsg(`Webcam video: ${shortError(firstError)}. Canvas: ${shortError(secondError)}. Switched to pointer/touch.`);
+      cleanupCamera();
+      camera.checked=false;
+      return;
+    }
   }
   const features=measureFeatures(response?.faceLandmarks?.[0]);
   if(!features){
@@ -118,7 +159,7 @@ function detectGaze(now){
   trackedFrames++;
   const score=movementScore(features,lastFeatures);
   lastFeatures=features;
-  sensorMsg(`Webcam: face tracked · frames ${trackedFrames} · movement ${score.toFixed(3)} / ${MOTION_THRESHOLD.toFixed(3)}. Try looking LEFT ↔ RIGHT.`);
+  sensorMsg(`Webcam: face tracked${compatMode?' (canvas mode)':''} · frames ${trackedFrames} · movement ${score.toFixed(3)} / ${MOTION_THRESHOLD.toFixed(3)}. Look LEFT ↔ RIGHT.`);
   if(trackedFrames>2&&score>=MOTION_THRESHOLD)incident(now);
 }
 function tick(now){
